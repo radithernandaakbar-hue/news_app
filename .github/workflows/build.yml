@@ -1,1 +1,27 @@
+name: Build APK
 
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Generate Android scaffolding
+        run: flutter create . --platforms=android --project-name news_app
+      - run: flutter pub get
+      - name: Build debug APK
+        run: flutter build apk --debug --dart-define=GNEWS_API_KEY=${{ secrets.GNEWS_API_KEY }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: news-app-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
